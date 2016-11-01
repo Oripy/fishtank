@@ -1,7 +1,7 @@
 function Fish (dna, pos, energy) {
   this.dna = dna || new DNA();
   this.mass = 1+this.dna.code[0]*10;
-  this.maxVel = this.dna.code[1]*3;//*this.mass/3.; //*this.mass/3.;  //*(11-this.mass/2.)/3; //*3;
+  this.maxVel = this.dna.code[1]*2+this.mass/5.;//*this.mass/3.; //*this.mass/3.;  //*(11-this.mass/2.)/3; //*3;
   this.sight = 50*this.dna.code[2];
   this.sightAngle = HALF_PI*(1-this.dna.code[3]);
 
@@ -280,13 +280,14 @@ function Fish (dna, pos, energy) {
     if (this.energy > 6*this.maxEnergy/10) {
       if (random(this.mass*this.mass) < 10) {
         this.energy /= 2.;
-        fishes.push(new Fish(this.dna.mutate(), this.pos.copy(), this.energy));
+        fishes.push(new Fish(this.dna.mutate(), this.pos.copy().sub(this.vel.copy().setMag(2*this.maxVel)), this.energy));
       }
     }
   }
 
   this.grow = function(value) {
-    this.mass += value/1000.;
+    this.mass += value/(1000+this.mass*500);
+    this.maxVel = this.dna.code[1]*2+this.mass/5.;
     this.maxForce = this.mass;
     this.radius = pow(PI*this.mass, 0.5);
     this.maxEnergy = map(this.mass, 0, 11, 0, MAX_ENERGY);

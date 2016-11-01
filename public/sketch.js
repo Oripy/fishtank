@@ -172,7 +172,7 @@ function draw() {
   }
 
   if (fishes.length <= 0) {
-    fishes.push(new Fish(new DNA(), createVector(random(width), random(height)), energy_loss));
+    fishes.push(new Fish(new DNA([0, random(1), random(1), random(1)]), createVector(random(width), random(height)), energy_loss));
   }
 
   id = floor(random(fishes.length));
