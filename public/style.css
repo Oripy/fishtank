@@ -1,0 +1,13 @@
+/* style.css */
+
+h1 {
+  text-align: center;
+  font-family: "Liberation Sans", Arial, sans-serif;
+  font-variant: small-caps;
+}
+
+#sketch-holder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

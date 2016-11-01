@@ -19,7 +19,8 @@ var energy_loss = 10000;
 var total_energy = 0;
 
 function setup() {
-  createCanvas(400, 400);
+  var canvas = createCanvas(600, 400);
+  canvas.parent('sketch-holder');
   colorMode(HSB);
   fishes = [];
   for (i = 0; i < num_fishes; i++) {
@@ -140,7 +141,7 @@ function draw() {
     }
   }
 
-  var threshold = 2000;
+  var threshold = 1000;
   if (energy_loss > threshold) {
     foods.push(new Food(threshold));
     energy_loss -= threshold;
