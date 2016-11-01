@@ -141,7 +141,7 @@ function draw() {
     }
   }
 
-  var threshold = 1000;
+  var threshold = 2000;
   if (energy_loss > threshold) {
     foods.push(new Food(threshold));
     energy_loss -= threshold;
