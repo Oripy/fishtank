@@ -5,7 +5,7 @@ function DNA (code) {
   this.code = code || [random(1), random(1), random(1), random(1)];
 
   this.mutate = function () {
-    id = floor(random(this.code.length));
+    id = 1+floor(random(this.code.length-1));
     out = this.code.slice();
     out[id] = abs(out[id]+randomGaussian(0, mut_rate));
     if (out[id] > 1) {

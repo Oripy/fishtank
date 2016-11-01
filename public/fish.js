@@ -1,7 +1,7 @@
 function Fish (dna, pos, energy) {
   this.dna = dna || new DNA();
   this.mass = 1+this.dna.code[0]*10;
-  this.maxVel = this.dna.code[1]*(11-this.mass/2.)/3; //*this.mass/3.;  //*(11-this.mass/2.)/3; //*3;
+  this.maxVel = this.dna.code[1]*3;//*this.mass/3.; //*this.mass/3.;  //*(11-this.mass/2.)/3; //*3;
   this.sight = 50*this.dna.code[2];
   this.sightAngle = HALF_PI*(1-this.dna.code[3]);
 
@@ -36,7 +36,7 @@ function Fish (dna, pos, energy) {
   this.update = function() {
     this.vel.add(this.acc);
     this.vel.limit(this.maxVel);
-    if (this.vel.mag() < this.minVel) {
+    if (distSquared(this.vel) < this.minVel*this.minVel) {
       this.vel.setMag(this.minVel);
     }
     this.pos.add(this.vel);
@@ -86,8 +86,8 @@ function Fish (dna, pos, energy) {
     for (var i in foods) {
       var diff = foods[i].pos.copy().sub(this.pos);
       var a = p5.Vector.angleBetween(this.vel, diff);
-      var d = diff.mag();
-      if ((d < this.sight) && (a < this.sightAngle || a > TWO_PI-this.sightAngle)) {
+      var d = distSquared(diff);
+      if ((d < this.sight*this.sight) && (a < this.sightAngle || a > TWO_PI-this.sightAngle)) {
         this.foods_list.push(foods[i]);
         this.food_energy += this.foodValue(foods[i]);
       }
@@ -96,8 +96,8 @@ function Fish (dna, pos, energy) {
       if (fishes[i] != this) {
         var diff = fishes[i].pos.copy().sub(this.pos);
         var a = p5.Vector.angleBetween(this.vel, diff);
-        var d = diff.mag();
-        if (d < this.sight) {
+        var d = distSquared(diff);
+        if (d < this.sight*this.sight) {
           this.neighboors.push(fishes[i]);
           if (a < this.sightAngle || a > TWO_PI-this.sightAngle) {
             if (fishes[i].mass >= this.mass+3) {
@@ -128,8 +128,8 @@ function Fish (dna, pos, energy) {
     var count = 0;
     if (this.neighboors.length > 0) {
       for (var i in this.neighboors) {
-        var d = this.pos.dist(this.neighboors[i].pos);
-        if ((d < this.radius*2+this.neighboors[i].radius*2) && (d > 0)) {
+        var d = distSquared(this.pos, this.neighboors[i].pos);
+        if (d < 4*(this.radius+this.neighboors[i].radius)*(this.radius+this.neighboors[i].radius)) {
           var diff = this.pos.copy().sub(this.neighboors[i].pos);
           diff.normalize();
           sum.add(diff);
@@ -193,11 +193,11 @@ function Fish (dna, pos, energy) {
   this.hunt = function() {
     // var sum = createVector(0, 0);
     if (this.preys.length > 0) {
-      var min_d = this.sight+1;
-      var closest;
+      var min_d = (this.sight*this.sight)+1;
+      var closest;// = this.preys[0];
       for (var i in this.preys) {
         //sum.add(this.preys[i].pos);
-        var d = p5.Vector.dist(this.preys[i].pos, this.pos);
+        var d = distSquared(this.preys[i].pos, this.pos);
         if (d < min_d) {
           min_d = d;
           closest = this.preys[i];
@@ -220,10 +220,10 @@ function Fish (dna, pos, energy) {
   // hunt for food
   this.find_food = function() {
     if (this.foods_list.length > 0) {
-      var min_d = this.sight+1;
-      var closest;
+      var min_d = (this.sight*this.sight)+1;
+      var closest;// = this.foods_list[0];
       for (var i in this.foods_list) {
-        var d = p5.Vector.dist(this.foods_list[i].pos, this.pos);
+        var d = distSquared(this.foods_list[i].pos, this.pos);
         if (d < min_d) {
           min_d = d;
           closest = this.foods_list[i];
@@ -244,21 +244,24 @@ function Fish (dna, pos, energy) {
   this.eat = function() {
     if (!this.dead) {
       for (var i in this.preys) {
-        var d = p5.Vector.dist(this.preys[i].pos, this.pos);
-        if ((d < this.radius) && (!this.preys[i].dead)) {
+        var d = distSquared(this.preys[i].pos, this.pos);
+        if ((d < this.radius*this.radius) && (!this.preys[i].dead)) {
           this.preys[i].dead = true;
           killed++;
           this.energy += this.preys[i].energy;
+          this.grow(this.preys[i].energy);
           this.preys[i].energy = 0;
           this.eatcount++;
         }
+
       }
       for (var i in foods) {
-        var d = p5.Vector.dist(foods[i].pos, this.pos);
-        if (d < foods[i].radius+this.radius) {
+        var d = distSquared(foods[i].pos, this.pos);
+        if (d < (foods[i].radius+this.radius)*(foods[i].radius+this.radius)) {
           var qtt = this.foodValue(foods[i]);
           this.energy += qtt;
           foods[i].energy -= qtt;
+          this.grow(qtt);
           foods[i].vel = createVector(random(-1, 1), random(-1, 1));
           foods[i].vel.setMag(0.5);
         }
@@ -274,12 +277,19 @@ function Fish (dna, pos, energy) {
   }
 
   this.reproduce = function() {
-    if (this.energy > this.maxEnergy/10) {
+    if (this.energy > 6*this.maxEnergy/10) {
       if (random(this.mass*this.mass) < 10) {
         this.energy /= 2.;
         fishes.push(new Fish(this.dna.mutate(), this.pos.copy(), this.energy));
       }
     }
+  }
+
+  this.grow = function(value) {
+    this.mass += value/1000.;
+    this.maxForce = this.mass;
+    this.radius = pow(PI*this.mass, 0.5);
+    this.maxEnergy = map(this.mass, 0, 11, 0, MAX_ENERGY);
   }
 
   this.age = function() {

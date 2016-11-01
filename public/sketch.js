@@ -1,5 +1,5 @@
 var fishes;
-var num_fishes = 1;
+var num_fishes = 10;
 var foods;
 var num_food = 0;
 
@@ -23,7 +23,7 @@ function setup() {
   colorMode(HSB);
   fishes = [];
   for (i = 0; i < num_fishes; i++) {
-    fishes.push(new Fish());
+    fishes.push(new Fish(new DNA([0, random(1), random(1), random(1)])));
   }
 
   foods = [];
@@ -181,4 +181,13 @@ function draw() {
   if (DEBUG >= 2) {
     graph();
   }
+}
+
+function distSquared(p1, p2) {
+  if (p2) {
+    return ((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
+  } else {
+    return (p1.x * p1.x) + (p1.y * p1.y);
+  }
+
 }
