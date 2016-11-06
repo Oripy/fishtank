@@ -15,6 +15,12 @@ function draw() {
   background(87, 216, 242);
   for (var i in branches) {
     branches[i].show();
+    for (var j in parts) {
+      if (parts[j].pos.dist(branches[i].pos) <= parts[j].radius + branches[i].radius) {
+        branches.push(parts[j]);
+        parts[j].stopped = true;
+      }
+    }
   }
 
   if (parts.length <= 50) {
@@ -53,31 +59,34 @@ function Branch(pos) {
   this.radius = 10;
 
   this.update = function() {
-    this.pos.add(createVector(random(-10, 10), random(-10, 10)));
-    for (var i in branches) {
-      if (this.pos.dist(branches[i].pos) <= this.radius + branches[i].radius) {
-        branches.push(this);
-        this.stopped = true;
+    if (!this.stopped) {
+      this.pos.add(createVector(random(-10, 10), random(-10, 10)));
+      // for (var i in branches) {
+      //   if (this.pos.dist(branches[i].pos) <= this.radius + branches[i].radius) {
+      //     branches.push(this);
+      //     this.stopped = true;
+      //   }
+      // }
+      if (this.pos.x < 0) {
+        this.pos.x = 0;
+      } else if (this.pos.x > width) {
+        this.pos.x = width;
       }
-    }
-    if (this.pos.x < 0) {
-      this.pos.x = 0;
-    } else if (this.pos.x > width) {
-      this.pos.x = width;
-    }
-    if (this.pos.y < 0) {
-      this.pos.y = 0;
-    } else if (this.pos.y > height) {
-      this.pos.y = height;
+      if (this.pos.y < 0) {
+        this.pos.y = 0;
+      } else if (this.pos.y > height) {
+        this.pos.y = height;
+      }
     }
   }
 
   this.show = function() {
     if (this.stopped) {
       fill(56, 193, 69);
+      ellipse(this.pos.x, this.pos.y, this.radius*2);
     } else {
-      fill(216, 239, 67);
+      //fill(216, 239, 67);
     }
-    ellipse(this.pos.x, this.pos.y, this.radius*2);
+
   }
 }
