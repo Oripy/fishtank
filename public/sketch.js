@@ -1,7 +1,11 @@
+var socket;
+
 var fishes;
 var num_fishes = 10;
 var foods;
 var num_food = 0;
+var users;
+var id;
 
 var deadcount = 0;
 var killed = 0;
@@ -19,6 +23,8 @@ var energy_loss = 10000;
 var total_energy = 0;
 
 function setup() {
+  socket = io.connect();
+
   var canvas = createCanvas(600, 400);
   canvas.parent('sketch-holder');
   colorMode(HSB);
@@ -31,6 +37,16 @@ function setup() {
   for (i = 0; i < num_food; i++) {
     foods.push(new Food());
   }
+
+  users = [];
+
+  socket.on('connected',
+    function(data) {
+      users[data.id] = new Fish(new DNA([0, 1, .99, 0]));
+      id = data.id;
+      console.log(id);
+    }
+  );
   //frameRate(20);
 }
 
@@ -170,6 +186,14 @@ function draw() {
       fishes[i].update();
       fishes[i].show();
     }
+  }
+
+  for (var id in users) {
+    users[id].seek(createVector(mouseX, mouseY));
+    users[id].look();
+    users[id].eat();
+    users[id].update();
+    users[id].show();
   }
 
   if (fishes.length <= 0) {
